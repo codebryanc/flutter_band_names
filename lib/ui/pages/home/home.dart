@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:band_name/models/band.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 
@@ -39,16 +40,37 @@ class _HomePageState extends State<HomePage> {
    );
   }
 
-  ListTile _bandTile(Band band) {
-    return ListTile(
-      leading: CircleAvatar(
-        child: Text( band.name.substring(0,2)),
-        backgroundColor: Colors.blue[100],
+  Widget _bandTile(Band band) {
+    return Dismissible(
+      direction: DismissDirection.startToEnd,
+      key: Key(band.id),
+      // ignore: sort_child_properties_last
+      child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[100],
+                child: Text( band.name.substring(0,2)),
+              ),
+              title: Text(band.name),
+              trailing: Text('${band.votes}', style: const TextStyle(fontSize: 20)),
+              onTap: () {
+                if (kDebugMode) {
+                  print(band.name);
+                }
+              },
+            ),
+      background: Container(
+        padding: const EdgeInsets.only(left: 8.0),
+        color: Colors.red,
+        child: const Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Delete band',style: TextStyle(color: Colors.white)),
+        )
       ),
-      title: Text(band.name),
-      trailing: Text('${band.votes}', style: TextStyle(fontSize: 20)),
-      onTap: () {
-        print(band.name);
+      onDismissed: (DismissDirection direction) {
+        if (kDebugMode) {
+          print('direction: $direction');
+          print('id: ${band.id}');
+        }
       },
     );
   }
@@ -56,8 +78,7 @@ class _HomePageState extends State<HomePage> {
   // Methods
   addNewBand() {
 
-    final TextEditingController textController = new TextEditingController();
-
+    final TextEditingController textController = TextEditingController();
 
     if(Platform.isIOS) {
       showCupertinoDialog(
@@ -65,19 +86,19 @@ class _HomePageState extends State<HomePage> {
         // No usamos la propiedad, esto es un estandar
         builder: (_) {
           return CupertinoAlertDialog(
-            title: Text('New band name'),
+            title: const Text('New band name'),
             content: CupertinoTextField(
               controller: textController,
             ),
             actions: <Widget> [
               CupertinoDialogAction(
                 isDefaultAction: true,
-                child: Text('Add'),
+                child: const Text('Add'),
                 onPressed: () => addBandToList(textController.text)
               ),
               CupertinoDialogAction(
                 isDestructiveAction: true,
-                child: Text('Dismiss'),
+                child: const Text('Dismiss'),
                 onPressed: () => Navigator.pop(context)
               )
             ],
@@ -90,15 +111,15 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('New band name:'),
+            title: const Text('New band name:'),
             content: TextField(
               controller: textController,
             ),
             actions: <Widget> [
               MaterialButton(
-                child: Text('Add'),
                 elevation: 5,
-                onPressed: () => addBandToList(textController.text)
+                onPressed: () => addBandToList(textController.text),
+                child: const Text('Add')
               )
             ],
           );
@@ -110,7 +131,7 @@ class _HomePageState extends State<HomePage> {
   void addBandToList(String bandName) {
     if(bandName.length > 1) {
       // Add
-      this.bands.add(Band(
+      bands.add(Band(
         id: DateTime.now().toString(),
         name: bandName,
         votes: 1)
